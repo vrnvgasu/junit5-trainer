@@ -7,41 +7,41 @@ import com.dmdev.exception.ValidationException;
 import com.dmdev.mapper.CreateUserMapper;
 import com.dmdev.mapper.UserMapper;
 import com.dmdev.validator.CreateUserValidator;
-import lombok.NoArgsConstructor;
+import java.util.Optional;
 import lombok.SneakyThrows;
 
-import java.util.Optional;
-
-import static lombok.AccessLevel.PRIVATE;
-
-@NoArgsConstructor(access = PRIVATE)
 public class UserService {
 
-    private static final UserService INSTANCE = new UserService();
+	private final CreateUserValidator createUserValidator;
 
-    private final CreateUserValidator createUserValidator = CreateUserValidator.getInstance();
-    private final UserDao userDao = UserDao.getInstance();
-    private final CreateUserMapper createUserMapper = CreateUserMapper.getInstance();
-    private final UserMapper userMapper = UserMapper.getInstance();
+	private final UserDao userDao;
 
-    public static UserService getInstance() {
-        return INSTANCE;
-    }
+	private final CreateUserMapper createUserMapper;
 
-    public Optional<UserDto> login(String email, String password) {
-        return userDao.findByEmailAndPassword(email, password)
-                .map(userMapper::map);
-    }
+	private final UserMapper userMapper;
 
-    @SneakyThrows
-    public UserDto create(CreateUserDto userDto) {
-        var validationResult = createUserValidator.validate(userDto);
-        if (!validationResult.isValid()) {
-            throw new ValidationException(validationResult.getErrors());
-        }
-        var userEntity = createUserMapper.map(userDto);
-        userDao.save(userEntity);
+	public UserService() {
+		createUserValidator = CreateUserValidator.getInstance();
+		userDao = UserDao.getInstance();
+		createUserMapper = CreateUserMapper.getInstance();
+		userMapper = UserMapper.getInstance();
+	}
 
-        return userMapper.map(userEntity);
-    }
+	public Optional<UserDto> login(String email, String password) {
+		return userDao.findByEmailAndPassword(email, password)
+				.map(userMapper::map);
+	}
+
+	@SneakyThrows
+	public UserDto create(CreateUserDto userDto) {
+		var validationResult = createUserValidator.validate(userDto);
+		if (!validationResult.isValid()) {
+			throw new ValidationException(validationResult.getErrors());
+		}
+		var userEntity = createUserMapper.map(userDto);
+		userDao.save(userEntity);
+
+		return userMapper.map(userEntity);
+	}
+
 }
