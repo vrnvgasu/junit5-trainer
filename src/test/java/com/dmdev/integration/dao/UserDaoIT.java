@@ -1,12 +1,14 @@
-package com.dmdev.dao;
+package com.dmdev.integration.dao;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.dmdev.dao.UserDao;
 import com.dmdev.entity.Gender;
 import com.dmdev.entity.Role;
 import com.dmdev.entity.User;
 import com.dmdev.integration.IntegrationTestBase;
+import com.dmdev.integration.util.TestObjectUtils;
 import java.time.LocalDate;
 import java.util.Optional;
 import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
@@ -14,7 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class UserDaoTest extends IntegrationTestBase {
+public class UserDaoIT extends IntegrationTestBase {
 
 	private UserDao userDao;
 
@@ -34,17 +36,7 @@ public class UserDaoTest extends IntegrationTestBase {
 		Optional<User> optional = userDao.findById(1);
 		assertThat(optional)
 				.isPresent();
-
-		User user = User.builder()
-				.id(1)
-				.name("Ivan")
-				.birthday(LocalDate.parse("1990-01-10"))
-				.email("ivan@gmail.com")
-				.password("111")
-				.role(Role.ADMIN)
-				.gender(Gender.MALE)
-				.build();
-		assertThat(optional.get()).isEqualTo(user);
+		assertThat(optional.get()).isEqualTo(TestObjectUtils.IVAN);
 	}
 
 	@Test
@@ -66,23 +58,18 @@ public class UserDaoTest extends IntegrationTestBase {
 	@Test
 	@DisplayName("Try to save existing email")
 	void saveFailed() {
-		User user = User.builder()
-				.name("Ivan")
-				.birthday(LocalDate.parse("1990-01-10"))
-				.email("ivan@gmail.com")
-				.password("111")
-				.role(Role.ADMIN)
-				.gender(Gender.MALE)
-				.build();
-
-		assertThrows(JdbcSQLIntegrityConstraintViolationException.class, () -> userDao.save(user));
+		assertThrows(JdbcSQLIntegrityConstraintViolationException.class, () -> userDao.save(TestObjectUtils.IVAN));
 	}
 
 	@Test
 	void findByEmailAndPassword() {
-		assertThat(userDao.findByEmailAndPassword("ivan@gmail.com", "111")).isPresent();
-		assertThat(userDao.findByEmailAndPassword("ivan@gmail.com", "dummy")).isEmpty();
-		assertThat(userDao.findByEmailAndPassword("dummy", "111")).isEmpty();
+		assertThat(userDao.findByEmailAndPassword(
+				TestObjectUtils.IVAN.getEmail(),
+				TestObjectUtils.IVAN.getPassword()
+		)).isPresent()
+				.isEqualTo(Optional.of(TestObjectUtils.IVAN));
+		assertThat(userDao.findByEmailAndPassword(TestObjectUtils.IVAN.getEmail(), "dummy")).isEmpty();
+		assertThat(userDao.findByEmailAndPassword("dummy", TestObjectUtils.IVAN.getPassword())).isEmpty();
 	}
 
 	@Test

@@ -123,6 +123,15 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.7</version>
+                <!-- Все модели не должны содержать логики, а значит и не нужно покрывать их тестами -->
+                <configuration>
+                    <excludes>
+                        <exclude>com/dmdev/dto/*</exclude>
+                        <exclude>com/dmdev/entity/*</exclude>
+                        <exclude>com/dmdev/exception/*</exclude>
+                        <exclude>com/dmdev/validator/Error.class</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
